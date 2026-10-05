@@ -6,23 +6,25 @@ import (
 	"io"
 	"time"
 
-	"github.com/jacobsa/go-serial/serial"
+	"go.bug.st/serial"
 	"salsanci.com/goterm/serafcFilter"
 )
 
 // SerialPort - Provides data transfer through a serial port
 type SerialPort struct {
 	port                           io.ReadWriteCloser
-	baud, serialResetTimeout       uint
+	portName                       string
+	baud                           int
+	serialResetTimeout             uint
 	debug                          bool
 	rxExit, txExit, rxDone, txDone chan bool
 	inCh                           chan<- []byte
 	outCh                          <-chan []byte
 	log                            chan<- string
-	options                        serial.OpenOptions
+	options                        serial.Mode
 }
 
-func NewSerial(portName string, baudrate uint, inputCh, outputCh chan []byte, serialResetTimeoutMs uint, afc bool) (*SerialPort, error) {
+func NewSerial(portName string, baudrate int, inputCh, outputCh chan []byte, serialResetTimeoutMs uint, afc bool) (*SerialPort, error) {
 	var e error
 	s := new(SerialPort)
 	if afc {
@@ -42,21 +44,20 @@ func NewSerial(portName string, baudrate uint, inputCh, outputCh chan []byte, se
 	s.rxDone = make(chan bool)
 	s.txDone = make(chan bool)
 	s.serialResetTimeout = serialResetTimeoutMs
+	s.portName = portName
 	s.baud = baudrate
-	s.options = serial.OpenOptions{
-		PortName: portName,
+	s.options = serial.Mode{
 		BaudRate: baudrate,
 		DataBits: 8,
-		StopBits: 1,
-		////InterCharacterTimeout: 100,
-		//MinimumReadSize:   1,
-		InterCharacterTimeout: 100,
-		MinimumReadSize:       0,
-		RTSCTSFlowControl:     false,
+		StopBits: serial.OneStopBit,
+		// MinimumReadSize:   1,
+		// InterCharacterTimeout: 100,
+		// MinimumReadSize:       0,
+		// RTSCTSFlowControl:     false,
 	}
 
 	if portName != "" {
-		s.port, e = serial.Open(s.options)
+		s.port, e = serial.Open(s.portName, &s.options)
 	} else {
 		e = errors.New("blank serial port name")
 	}
@@ -97,7 +98,7 @@ func (s *SerialPort) run() {
 			if s.log != nil {
 				s.log <- "Serial port run: reopening"
 			}
-			s.port, e = serial.Open(s.options)
+			s.port, e = serial.Open(s.portName, &s.options)
 			if e != nil {
 				if s.log != nil {
 					s.log <- fmt.Sprintf("Serial port run: reopening failed [%v]", e)

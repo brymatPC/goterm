@@ -539,7 +539,7 @@ func main() {
 				}
 			}()
 		} else if cc.IpToSerialFlag && (cc.SerialPort != "") && (cc.Port != 0) {
-			sp, err = chanSerial.NewSerial(cc.SerialPort, uint(cc.Baud), ipToSerialFromSerial, ipToSerialToSerial, uint(cc.SerialResetTimeout), cc.Afc)
+			sp, err = chanSerial.NewSerial(cc.SerialPort, int(cc.Baud), ipToSerialFromSerial, ipToSerialToSerial, uint(cc.SerialResetTimeout), cc.Afc)
 			if err != nil {
 				toLogConsole <- fmt.Sprintf("goterm: serial ERROR [%v]", err)
 				time.Sleep(500 * time.Millisecond)
@@ -566,7 +566,7 @@ func main() {
 			}
 
 		} else if cc.SerialPort != "" {
-			sp, err = chanSerial.NewSerial(cc.SerialPort, uint(cc.Baud), fromPhy, toPhy, uint(cc.SerialResetTimeout), cc.Afc)
+			sp, err = chanSerial.NewSerial(cc.SerialPort, int(cc.Baud), fromPhy, toPhy, uint(cc.SerialResetTimeout), cc.Afc)
 			if err != nil {
 				toLogConsole <- fmt.Sprintf("goterm: serial ERROR [%v]", err)
 				time.Sleep(500 * time.Millisecond)

@@ -47,13 +47,11 @@ func NewSerial(portName string, baudrate int, inputCh, outputCh chan []byte, ser
 	s.portName = portName
 	s.baud = baudrate
 	s.options = serial.Mode{
-		BaudRate: baudrate,
-		DataBits: 8,
-		StopBits: serial.OneStopBit,
-		// MinimumReadSize:   1,
-		// InterCharacterTimeout: 100,
-		// MinimumReadSize:       0,
-		// RTSCTSFlowControl:     false,
+		BaudRate:          baudrate,
+		DataBits:          8,
+		StopBits:          serial.OneStopBit,
+		Parity:            serial.NoParity,
+		InitialStatusBits: &serial.ModemOutputBits{RTS: false, DTR: false},
 	}
 
 	if portName != "" {
